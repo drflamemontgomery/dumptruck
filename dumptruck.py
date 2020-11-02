@@ -1,27 +1,3 @@
-Last login: Tue Nov  3 07:16:37 on ttys000
-glenwarnerbuilders@Warnerss-iMac ~ % cd ashton 
-glenwarnerbuilders@Warnerss-iMac ashton % vim dumptruck.py 
-glenwarnerbuilders@Warnerss-iMac ashton % vim dumptruck.py
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import tkinter as tk
 
 import sys
