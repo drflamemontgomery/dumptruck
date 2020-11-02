@@ -1,3 +1,27 @@
+Last login: Tue Nov  3 07:16:37 on ttys000
+glenwarnerbuilders@Warnerss-iMac ~ % cd ashton 
+glenwarnerbuilders@Warnerss-iMac ashton % vim dumptruck.py 
+glenwarnerbuilders@Warnerss-iMac ashton % vim dumptruck.py
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import tkinter as tk
 
 import sys
@@ -12,20 +36,22 @@ if len(sys.argv) <= 1:
 if sys.argv[1][-6:] != ".class":
     print("Please use .class files")
     exit()
-    
+   
 textFrame = tk.Frame()
 buttonFrame = tk.Frame()
 
 file = open(sys.argv[1], "rb")
 file = file.read()
 
-text_box = tk.Text()
+text_box = tk.Text(textFrame)
+text_box.configure(height=26, width=82)
 text_box.pack()
+textFrame.pack()
 
 stack = []
 
 for i in range(0, len(file)):
-    hexValue = hex(file[len(file)-i-1])[2:4]
+    hexValue = hex(ord(file[len(file)-i-1]))[2:4]
     if len(hexValue) == 1:
         hexValue = "0" + hexValue
     stack.append(hexValue)
@@ -88,7 +114,7 @@ for i in range(1, int("0x" + constant_pool_count, 16)):
         printString = ''
         for char in range(0, length):
             printString += chr(int("0x" + stack.pop(), 16))
-    
+
         text_box.insert(tk.END, "#" + str(i) + "    " + constant_pool[constant_pool_arg] + "    " + printString + "\n")
 
     #Integer of Float
@@ -102,12 +128,12 @@ for i in range(1, int("0x" + constant_pool_count, 16)):
     elif constant_pool_arg == 5 or constant_pool_arg == 6:
 
         printString = ""
-        
+
         for value in range(0, 4):
             printString += str(stack.pop())
 
         printString += "."
-        
+
         for value in range(0, 4):
             printString += str(stack.pop())
         text_box.insert(tk.END, "#" + str(i) + "    " + constant_pool[constant_pool_arg] + "    " + printString + "\n")
@@ -116,21 +142,20 @@ for i in range(1, int("0x" + constant_pool_count, 16)):
     #Class
     elif constant_pool_arg == 7 or constant_pool_arg == 8 or constant_pool_arg == 16 or constant_pool_arg == 19 or constant_pool_arg == 20:
         printString = ""
-        
+
         for value in range(0, 2):
             printString += str(stack.pop())
         text_box.insert(tk.END, "#" + str(i) + "    " + constant_pool[constant_pool_arg] + "    " + printString + "\n")
 
-        
+
     #Fieldref or Methodref or InterfaceMethodref
     elif constant_pool_arg == 9 or constant_pool_arg == 10 or constant_pool_arg == 11 or constant_pool_arg == 12 or constant_pool_arg == 18:
         printString = ""
-        
+
         for value in range(0, 2):
             printString += str(stack.pop())
 
         printString += "."
-        
         for value in range(0, 2):
             printString += str(stack.pop())
         text_box.insert(tk.END, "#" + str(i) + "    " + constant_pool[constant_pool_arg] + "    " + printString + "\n")
@@ -138,22 +163,22 @@ for i in range(1, int("0x" + constant_pool_count, 16)):
     #MethodHandle
     elif constant_pool_arg == 15:
         printString = str(stack.pop()) + ":"
-        
-        
+
+
         for value in range(0, 2):
             printString += str(stack.pop())
         text_box.insert(tk.END, "#" + str(i) + "    " + constant_pool[constant_pool_arg] + "    " + printString + "\n")
-        
+
     #Everything else
     #elif constant_pool_arg in constant_pool_args:
      #   text_box.insert(tk.END, "#" + str(i) + "    " + constant_pool[constant_pool_arg] + "\n")
       #  for value in constant_pool_args[constant_pool_arg]:
        #     for byte in range(value):
         #        stack.pop()
-    
+   
     if constant_pool_arg == 6:
         i_plus += 1
-        
-    
-    
+
+
+
 window.mainloop()
