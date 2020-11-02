@@ -9,7 +9,7 @@ if len(sys.argv) <= 1:
     print("usage: dumptruck [filename]")
     exit()
 
-if sys.argv[1][-6:len(sys.argv[1])+6] != ".class":
+if sys.argv[1][-6:] != ".class":
     print("Please use .class files")
     exit()
     
@@ -50,7 +50,9 @@ constant_pool = {
     12: "NameAndType",
     15: "MethodHandle",
     16: "MethodType",
-    18: "InvokeDynamic"
+    18: "InvokeDynamic",
+    19: "Module",
+    20: "Package"
 }
 
 constant_pool_args = {
@@ -67,13 +69,91 @@ constant_pool_args = {
     12: [2, 2],
     15: [1, 2],
     16: [2],
-    18: [2, 2]
+    18: [2, 2],
+    19: [2],
+    20: [2]
 }
 
-for i in range(0, int("0x" + constant_pool_count, 16)-1):
+i_plus = 0;
+
+for i in range(1, int("0x" + constant_pool_count, 16)):
     constant_pool_arg = int("0x" + stack.pop(), 16)
-    for value in constant_pool_args:
-        text_box.insert(tk.END, "#" + str(i) + "    " + constant_pool[constant_pool_arg]+"\n")
+
+    i += i_plus
+
+    #Utf8
+    if constant_pool_arg == 1:
+        length = int("0x" + stack.pop() + stack.pop(), 16)
+        #print(length)
+        printString = ''
+        for char in range(0, length):
+            printString += chr(int("0x" + stack.pop(), 16))
+    
+        text_box.insert(tk.END, "#" + str(i) + "    " + constant_pool[constant_pool_arg] + "    " + printString + "\n")
+
+    #Integer of Float
+    elif constant_pool_arg == 3 or constant_pool_arg == 4:
+        printString = ''
+        for value in range(0, 4):
+            printString += str(stack.pop())
+        text_box.insert(tk.END, "#" + str(i) + "    " + constant_pool[constant_pool_arg] + "    " + printString + "\n")
+
+    #Long or Double
+    elif constant_pool_arg == 5 or constant_pool_arg == 6:
+
+        printString = ""
+        
+        for value in range(0, 4):
+            printString += str(stack.pop())
+
+        printString += "."
+        
+        for value in range(0, 4):
+            printString += str(stack.pop())
+        text_box.insert(tk.END, "#" + str(i) + "    " + constant_pool[constant_pool_arg] + "    " + printString + "\n")
+
+
+    #Class
+    elif constant_pool_arg == 7 or constant_pool_arg == 8 or constant_pool_arg == 16 or constant_pool_arg == 19 or constant_pool_arg == 20:
+        printString = ""
+        
+        for value in range(0, 2):
+            printString += str(stack.pop())
+        text_box.insert(tk.END, "#" + str(i) + "    " + constant_pool[constant_pool_arg] + "    " + printString + "\n")
+
+        
+    #Fieldref or Methodref or InterfaceMethodref
+    elif constant_pool_arg == 9 or constant_pool_arg == 10 or constant_pool_arg == 11 or constant_pool_arg == 12 or constant_pool_arg == 18:
+        printString = ""
+        
+        for value in range(0, 2):
+            printString += str(stack.pop())
+
+        printString += "."
+        
+        for value in range(0, 2):
+            printString += str(stack.pop())
+        text_box.insert(tk.END, "#" + str(i) + "    " + constant_pool[constant_pool_arg] + "    " + printString + "\n")
+
+    #MethodHandle
+    elif constant_pool_arg == 15:
+        printString = str(stack.pop()) + ":"
+        
+        
+        for value in range(0, 2):
+            printString += str(stack.pop())
+        text_box.insert(tk.END, "#" + str(i) + "    " + constant_pool[constant_pool_arg] + "    " + printString + "\n")
+        
+    #Everything else
+    #elif constant_pool_arg in constant_pool_args:
+     #   text_box.insert(tk.END, "#" + str(i) + "    " + constant_pool[constant_pool_arg] + "\n")
+      #  for value in constant_pool_args[constant_pool_arg]:
+       #     for byte in range(value):
+        #        stack.pop()
+    
+    if constant_pool_arg == 6:
+        i_plus += 1
+        
     
     
 window.mainloop()
