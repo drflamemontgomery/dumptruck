@@ -27,9 +27,16 @@ textFrame.pack()
 stack = []
 
 for i in range(0, len(file)):
-    hexValue = hex(ord(file[len(file)-i-1]))[2:4]
-    if len(hexValue) == 1:
-        hexValue = "0" + hexValue
+
+    hexValue = 0
+    if type(file[0]) == int:
+        hexValue = hex(file[-(i+1)])[2:4]
+        if len(hexValue) == 1:
+            hexValue = "0" + hexValue
+    elif type(file[0]) == str:
+        hexValue = hex(file[-(i+1)])[2:4]
+        if len(hexValue) == 1:
+            hexValue = "0" + hexValue
     stack.append(hexValue)
 
 text_box.insert(tk.END, "Magic Number: " + stack.pop() + stack.pop() + stack.pop() + stack.pop()+ "\n")
