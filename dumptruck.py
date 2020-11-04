@@ -40,9 +40,9 @@ for i in range(0, len(file)):
     stack.append(hexValue)
 
 text_box.insert(tk.END, "Magic Number: " + stack.pop() + stack.pop() + stack.pop() + stack.pop()+ "\n")
-text_box.insert(tk.END, "Minor Version: " + stack.pop() + stack.pop() + "\n")
-text_box.insert(tk.END, "Major Version: " + stack.pop() + stack.pop() + "\n")
-constant_pool_count = stack.pop() + stack.pop()
+text_box.insert(tk.END, "Minor Version: " + str(int("0x" + stack.pop() + stack.pop(), 16)) + "\n")
+text_box.insert(tk.END, "Major Version: " + str(int("0x" + stack.pop() + stack.pop(), 16)) + "\n")
+constant_pool_count = str(int("0x" + stack.pop() + stack.pop(), 16))
 text_box.insert(tk.END, "Constant Pool Count: " + constant_pool_count + "\n")
 
 constant_pool = {
@@ -85,7 +85,7 @@ constant_pool_args = {
 
 i_plus = 0;
 
-for i in range(1, int("0x" + constant_pool_count, 16)):
+for i in range(1, int(constant_pool_count)):
     constant_pool_arg = int("0x" + stack.pop(), 16)
 
     i += i_plus
@@ -105,6 +105,7 @@ for i in range(1, int("0x" + constant_pool_count, 16)):
         printString = ''
         for value in range(0, 4):
             printString += str(stack.pop())
+        printString = str(int("0x" + printString, 16))
         text_box.insert(tk.END, "#" + str(i) + "    " + constant_pool[constant_pool_arg] + "    " + printString + "\n")
 
     #Long or Double
@@ -114,11 +115,14 @@ for i in range(1, int("0x" + constant_pool_count, 16)):
 
         for value in range(0, 4):
             printString += str(stack.pop())
-
+        printString = str(int("0x" + printString, 16))
         printString += "."
 
+        tempString = ""
+        
         for value in range(0, 4):
-            printString += str(stack.pop())
+            tempString += str(stack.pop())
+        printString += str(int("0x" + tempString, 16))
         text_box.insert(tk.END, "#" + str(i) + "    " + constant_pool[constant_pool_arg] + "    " + printString + "\n")
 
 
