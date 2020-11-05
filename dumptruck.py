@@ -132,6 +132,7 @@ for i in range(1, int(constant_pool_count)):
 
         for value in range(0, 2):
             printString += str(stack.pop())
+        printString = "#" + str(int( "0x" + printString, 16))
         text_box.insert(tk.END, "#" + str(i) + "    " + constant_pool[constant_pool_arg] + "    " + printString + "\n")
 
 
@@ -141,19 +142,23 @@ for i in range(1, int(constant_pool_count)):
 
         for value in range(0, 2):
             printString += str(stack.pop())
-
+        printString = "#" + str(int("0x" + printString, 16))
         printString += "."
+
+        tempString = ""
         for value in range(0, 2):
-            printString += str(stack.pop())
+            tempString += str(stack.pop())
+        printString += "#" + str(int("0x" + tempString, 16))
         text_box.insert(tk.END, "#" + str(i) + "    " + constant_pool[constant_pool_arg] + "    " + printString + "\n")
 
     #MethodHandle
     elif constant_pool_arg == 15:
-        printString = str(stack.pop()) + ":"
+        printString = "#" + str(int("0x" + stack.pop(), 16)) + ":"
 
-
+        tempString = ""
         for value in range(0, 2):
-            printString += str(stack.pop())
+            tempString += str(stack.pop())
+        printString += "#" + str(int("0x" + tempString, 16))
         text_box.insert(tk.END, "#" + str(i) + "    " + constant_pool[constant_pool_arg] + "    " + printString + "\n")
 
     #Everything else
