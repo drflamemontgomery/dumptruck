@@ -1,5 +1,5 @@
 import tkinter as tk
-
+import re
 import sys
 
 window = tk.Tk()
@@ -47,8 +47,10 @@ def dissemble():
     text_box.insert(tk.END, "Magic Number: " + stack.pop() + stack.pop() + stack.pop() + stack.pop()+ "\n")
     text_box.insert(tk.END, "Minor Version: " + str(int("0x" + stack.pop() + stack.pop(), 16)) + "\n")
     text_box.insert(tk.END, "Major Version: " + str(int("0x" + stack.pop() + stack.pop(), 16)) + "\n")
+    
     constant_pool_count = str(int("0x" + stack.pop() + stack.pop(), 16))
-    text_box.insert(tk.END, "Constant Pool Count: " + constant_pool_count + "\n")
+    #text_box.insert(tk.END, "Constant Pool Count: " + constant_pool_count + "\n")
+    text_box.insert(tk.END, "#START_CONSTANT_POOL" + "\n")
 
     constant_pool = {
     1: "Utf8",
@@ -71,7 +73,7 @@ def dissemble():
 
     constant_pool_args = {
         1: [2],
-    3: [4],
+        3: [4],
         4: [4],
         5: [4, 4],
         6: [4, 4],
@@ -175,18 +177,48 @@ def dissemble():
    
         if constant_pool_arg == 6:
             i_plus += 1
+    text_box.insert(tk.END, "#END_CONSTANT_POOL" + "\n")
 
 def assemble(event):
 
     writeFile = open(sys.argv[1] + ".exported", "wb")
     
     stack = []
-    
-    stack.append(int("0x" + text_box.get("1.14", "1.16"), 16))
-    stack.append(int("0x" + text_box.get("1.16", "1.18"), 16))
-    stack.append(int("0x" + text_box.get("1.18", "1.20"), 16))
-    stack.append(int("0x" + text_box.get("1.20", "1.22"), 16))
+    magicNumber = text_box.get("1.0", "2.0")[-9:-1]
+    stack.append(int("0x" + magicNumber[0:2], 16))
+    stack.append(int("0x" + magicNumber[2:4], 16))
+    stack.append(int("0x" + magicNumber[4:6], 16))
+    stack.append(int("0x" + magicNumber[6:8], 16))
 
+    minorVersion = int(re.sub("[^0-9]", "", text_box.get("2.0", "3.0")[-6:-1]))
+    minorVersion = format(minorVersion, '04x')
+
+    stack.append(int("0x" + minorVersion[0:2], 16))
+    stack.append(int("0x" + minorVersion[2:4], 16))
+
+    majorVersion = int(re.sub("[^0-9]", "", text_box.get("3.0", "4.0")[-6:-1]))
+    majorVersion = format(majorVersion, '04x')
+
+    stack.append(int("0x" + majorVersion[0:2], 16))
+    stack.append(int("0x" + majorVersion[2:4], 16))
+
+    cp_count = 1
+    line = 5
+
+    cp = []
+    
+    while True:
+        if text_box.get(str(line) + ".0", str((line+1)) + ".0") == "#END_CONSTANT_POOL\n":
+            break
+        line += 1
+        cp_count += 1
+
+    cp_count = format(cp_count, '04x')
+
+    stack.append(int("0x" + cp_count[0:2], 16))
+    stack.append(int("0x" + cp_count[2:4], 16))
+    
+    print(cp_count)
     
     writeFile.write(bytearray(stack))
     
