@@ -53,7 +53,7 @@ def dissemble():
     text_box.insert(tk.END, "#START_CONSTANT_POOL" + "\n")
 
     constant_pool = {
-    1: "Utf8",
+        1: "Utf8",
         3: "Integer",
         4: "Float",
         5: "Long",
@@ -90,20 +90,22 @@ def dissemble():
         20: [2]
     }
 
-    i_plus = 0;
-
-    for i in range(1, int(constant_pool_count)):
+    #i_plus = 0;
+    i = 1
+    while(i < int(constant_pool_count)):
+    #for i in range(1, int(constant_pool_count)):
         constant_pool_arg = int("0x" + stack.pop(), 16)
 
-        i += i_plus
+        #i += i_plus
 
         #Utf8
         if constant_pool_arg == 1:
             length = int("0x" + stack.pop() + stack.pop(), 16)
             #print(length)
-            printString = ''
+            printString = '"'
             for char in range(0, length):
                 printString += chr(int("0x" + stack.pop(), 16))
+            printString += '"'
 
             text_box.insert(tk.END, "#" + str(i) + "    " + constant_pool[constant_pool_arg] + "    " + printString + "\n")
 
@@ -160,7 +162,7 @@ def dissemble():
 
         #MethodHandle
         elif constant_pool_arg == 15:
-            printString = "#" + str(int("0x" + stack.pop(), 16)) + ":"
+            printString = str(int("0x" + stack.pop(), 16)) + ":"
 
             tempString = ""
             for value in range(0, 2):
@@ -176,7 +178,8 @@ def dissemble():
         #        stack.pop()
    
         if constant_pool_arg == 6:
-            i_plus += 1
+            i += 1
+        i += 1
     text_box.insert(tk.END, "#END_CONSTANT_POOL" + "\n")
 
 def assemble(event):
@@ -208,8 +211,155 @@ def assemble(event):
     cp = []
     
     while True:
-        if text_box.get(str(line) + ".0", str((line+1)) + ".0") == "#END_CONSTANT_POOL\n":
+        value = text_box.get(str(line) + ".0", str((line+1)) + ".0")
+        if value == "#END_CONSTANT_POOL\n":
             break
+        if "Utf8" in value.split()[:2]:
+            cp.append(1)
+            utf8_string = ""
+            for string in value.split('"')[1:-1]:
+                utf8_string += string + '"'
+            utf8_string = utf8_string[:-1]
+            #print(utf8_string)
+            utf8_length = format(len(utf8_string), '04x')
+            cp.append(int("0x" + utf8_length[0:2], 16))
+            cp.append(int("0x" + utf8_length[2:4], 16))
+            
+            for char in utf8_string:
+                cp.append(ord(char))
+        elif "Integer" in value.split()[:2]:
+            cp.append(3)
+            integer = format(int(value.split()[2]), '08x')
+
+            cp.append(int("0x" + integer[0:2], 16))
+            cp.append(int("0x" + integer[2:4], 16))
+            cp.append(int("0x" + integer[4:6], 16))
+            cp.append(int("0x" + integer[6:8], 16))
+        elif "Float" in value.split()[:2]:
+            cp.append(4)
+            integer = format(int(value.split()[2]), '08x')
+
+            cp.append(int("0x" + integer[0:2], 16))
+            cp.append(int("0x" + integer[2:4], 16))
+            cp.append(int("0x" + integer[4:6], 16))
+            cp.append(int("0x" + integer[6:8], 16))
+        elif "Long" in value.split()[:2]:
+            cp.append(5)
+            high_value = format(int(value.split()[2].split(".")[0]), '08x')
+            low_value = format(int(value.split()[2].split(".")[1]), '08x')
+
+            cp.append(int("0x" + high_value[0:2], 16))
+            cp.append(int("0x" + high_value[2:4], 16))
+            cp.append(int("0x" + high_value[4:6], 16))
+            cp.append(int("0x" + high_value[6:8], 16))
+
+            cp.append(int("0x" + low_value[0:2], 16))
+            cp.append(int("0x" + low_value[2:4], 16))
+            cp.append(int("0x" + low_value[4:6], 16))
+            cp.append(int("0x" + low_value[6:8], 16))
+
+            
+        elif "Double" in value.split()[:2]:
+            cp_count += 1
+            
+            cp.append(6)
+            high_value = format(int(value.split()[2].split(".")[0]), '08x')
+            low_value = format(int(value.split()[2].split(".")[1]), '08x')
+
+            cp.append(int("0x" + high_value[0:2], 16))
+            cp.append(int("0x" + high_value[2:4], 16))
+            cp.append(int("0x" + high_value[4:6], 16))
+            cp.append(int("0x" + high_value[6:8], 16))
+
+            cp.append(int("0x" + low_value[0:2], 16))
+            cp.append(int("0x" + low_value[2:4], 16))
+            cp.append(int("0x" + low_value[4:6], 16))
+            cp.append(int("0x" + low_value[6:8], 16))
+        elif "Class" in value.split()[:2]:
+            cp.append(7)
+
+            name_index = format(int(value.split()[2][1:]), '04x')
+            cp.append(int('0x' + name_index[0:2], 16))
+            cp.append(int('0x' + name_index[2:4], 16))
+        elif "String" in value.split()[:2]:
+            cp.append(8)
+            
+            string_index = format(int(value.split()[2][1:]), '04x')
+            cp.append(int('0x' + string_index[0:2], 16))
+            cp.append(int('0x' + string_index[2:4], 16))
+        elif "Fieldref" in value.split()[:2]:
+            cp.append(9)
+
+            class_index = format(int(value.split()[2].split(".")[0][1:]), '04x')
+            name_index = format(int(value.split()[2].split(".")[1][1:]), '04x')
+
+            cp.append(int('0x' + class_index[0:2], 16))
+            cp.append(int('0x' + class_index[2:4], 16))
+
+            cp.append(int('0x' + name_index[0:2], 16))
+            cp.append(int('0x' + name_index[2:4], 16))
+        elif "Methodref" in value.split()[:2]:
+            cp.append(10)
+
+            class_index = format(int(value.split()[2].split(".")[0][1:]), '04x')
+            name_index = format(int(value.split()[2].split(".")[1][1:]), '04x')
+
+            cp.append(int('0x' + class_index[0:2], 16))
+            cp.append(int('0x' + class_index[2:4], 16))
+
+            cp.append(int('0x' + name_index[0:2], 16))
+            cp.append(int('0x' + name_index[2:4], 16))
+        elif "InterfaceMethodref" in value.split()[:2]:
+            cp.append(11)
+
+            class_index = format(int(value.split()[2].split(".")[0][1:]), '04x')
+            name_index = format(int(value.split()[2].split(".")[1][1:]), '04x')
+
+            cp.append(int('0x' + class_index[0:2], 16))
+            cp.append(int('0x' + class_index[2:4], 16))
+
+            cp.append(int('0x' + name_index[0:2], 16))
+            cp.append(int('0x' + name_index[2:4], 16))
+
+        elif "NameAndType" in value.split()[:2]:
+            cp.append(12)
+
+            name_index = format(int(value.split()[2].split(".")[0][1:]), '04x')
+            descriptor_index = format(int(value.split()[2].split(".")[1][1:]), '04x')
+
+            cp.append(int('0x' + name_index[0:2], 16))
+            cp.append(int('0x' + name_index[2:4], 16))
+
+            cp.append(int('0x' + descriptor_index[0:2], 16))
+            cp.append(int('0x' + descriptor_index[2:4], 16))
+        elif "MethodHandle" in value.split()[:2]:
+            cp.append(15)
+
+            reference_kind = format(int(value.split()[2].split(":")[0]), '02x')
+            reference_index = format(int(value.split()[2].split(":")[1][1:]), '04x')
+            
+            cp.append(int('0x' + reference_kind, 16))
+
+            cp.append(int('0x' + reference_index[0:2], 16))
+            cp.append(int('0x' + reference_index[2:4], 16))
+        elif "MethodType" in value.split()[:2]:
+            cp.append(16)
+
+            descriptor_index = format(int(value.split()[2][1:]), '04x')
+            cp.append(int('0x' + descriptor_index[0:2], 16))
+            cp.append(int('0x' + descriptor_index[2:4], 16))
+        elif "InvokeDynamic" in value.split()[:2]:
+            cp.append(18)
+
+            bootstrap_method_attr_index = format(int(value.split()[2].split(".")[0][1:]), '04x')
+            name_and_type_index = format(int(value.split()[2].split(".")[1][1:]), '04x')
+
+            cp.append(int('0x' + bootstrap_method_attr_index[0:2], 16))
+            cp.append(int('0x' + bootstrap_method_attr_index[2:4], 16))
+
+            cp.append(int('0x' + name_and_type_index[0:2], 16))
+            cp.append(int('0x' + name_and_type_index[2:4], 16))
+            
         line += 1
         cp_count += 1
 
@@ -217,8 +367,12 @@ def assemble(event):
 
     stack.append(int("0x" + cp_count[0:2], 16))
     stack.append(int("0x" + cp_count[2:4], 16))
+
+    for value in cp:
+        stack.append(value)
     
     print(cp_count)
+    print(cp)
     
     writeFile.write(bytearray(stack))
     
